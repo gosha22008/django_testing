@@ -18,6 +18,14 @@ def course_factory():
     return factory
 
 
+@pytest.fixture
+def student_factory():
+    def factory(*args, **kwargs):
+        return baker.make(Student, *args, **kwargs)
+
+    return factory
+
+
 @pytest.mark.django_db
 def test_get_course(client):
     Course.objects.create(name='Python')
@@ -34,12 +42,13 @@ def test_get_course(client):
 def test_get_1_course(client, course_factory):
     courses = course_factory(_quantity=1)
 
-    response = client.get('/api/v1/courses/')
+    response = client.get(f'/api/v1/courses/{courses[0].id}/')
 
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == len(courses)
-    assert data[0]['name'] == courses[0].name
+
+    assert data['name'] == courses[0].name
+    assert data['id'] == courses[0].id
 
 
 @pytest.mark.django_db
